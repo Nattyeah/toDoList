@@ -2,19 +2,22 @@ package com.nataly.toDoList.application.model;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.MongoId;
+import lombok.ToString;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@Document(collection = "tasks")
+@Entity
+@ToString
 public class TasksEntity {
-// Saida da req
+
     @Id
-    @MongoId
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
 
     private String title;
@@ -22,4 +25,10 @@ public class TasksEntity {
     private String description;
 
     private LocalDateTime deadline;
+
+    public void update(TasksEntity request) {
+        this.title = request.getTitle();
+        this.description = request.getDescription();
+        this.deadline = request.getDeadline();
+    }
 }

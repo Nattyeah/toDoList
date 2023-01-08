@@ -1,24 +1,15 @@
 package com.nataly.toDoList.service;
 
-import com.nataly.toDoList.application.dto.TasksDTO;
 import com.nataly.toDoList.application.model.TasksEntity;
-import com.nataly.toDoList.exceptions.TasksExceptions;
 import com.nataly.toDoList.infrastructure.repository.TasksRepository;
-import org.modelmapper.ModelMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class TasksService {
-
-    private final ModelMapper modelMapper = new ModelMapper();
-
-    Logger logger = LoggerFactory.getLogger(TasksService.class);
 
     @Autowired
     private TasksRepository repository;
@@ -29,37 +20,33 @@ public class TasksService {
     }
 
     //    getTaskById
-    public TasksDTO getTaskById(String id) throws TasksExceptions {
-        Optional<TasksEntity> findTasks = repository.findById(id);
-
-        if (findTasks.isPresent()) {
-            return modelMapper.map(findTasks.get(), TasksDTO.class);
-        } else {
-            throw new TasksExceptions("Error finding task by id: {}" + id);
-        }
+    public ResponseEntity<TasksEntity> getTaskById(String id) {
+        return repository.findById(id)
+                .map(task -> ResponseEntity.ok().body(task))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     //    createTask
-    public TasksDTO createTask(TasksDTO request) {
-        TasksEntity createTasks = repository.save(modelMapper.map(request, TasksEntity.class));
-        return modelMapper.map(createTasks, TasksDTO.class);
+    public TasksEntity createTask(TasksEntity request) {
+        return repository.save(request);
     }
 
     //    updateTask
-    public TasksDTO updateTask(String id, TasksDTO tasksDTO) throws TasksExceptions {
-        Optional<TasksEntity> findTasks = repository.findById(id);
-
-        if (findTasks.isPresent()) {
-           TasksEntity updateTasks = findTasks.get();
-           repository.save(modelMapper.map(tasksDTO, TasksEntity.class));
-           return modelMapper.map(updateTasks, TasksDTO.class);
-        } else {
-            throw new TasksExceptions("Error while updating task");
-        }
+    public ResponseEntity<TasksEntity> updateTask(String id, TasksEntity request) {
+        return repository.findById(id)
+                .map(tasksToUpdate -> {
+                    tasksToUpdate.update(request);
+                    TasksEntity updated = repository.save(tasksToUpdate);
+                    return ResponseEntity.ok().body(updated);
+                }).orElse(ResponseEntity.notFound().build());
     }
 
     //    deleteTask
-    public void deleteTask(String id) {
-        repository.deleteById(id);
+    public ResponseEntity<Object> deleteTask(String id) {
+        return repository.findById(id)
+                .map(tasksToDelete -> {
+                    repository.deleteById(id);
+                    return ResponseEntity.noContent().build();
+                }).orElse(ResponseEntity.notFound().build());
     }
 }

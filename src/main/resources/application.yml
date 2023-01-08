@@ -1,0 +1,9 @@
+#server:
+#  error:
+#    include-message: always
+#spring:
+#  data:
+#    mongodb:
+#      authentication-database: estudos
+#      auto-index-creation: true
+#      uri: mongodb+srv://admin:<admin>@estudos.mr4w0xa.mongodb.net/?retryWrites=true&w=majority
